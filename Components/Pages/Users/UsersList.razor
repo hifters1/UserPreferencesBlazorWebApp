@@ -15,7 +15,10 @@
 
 @if (AddUserOverlayVisible)
 {
-	//overlay file                                         callback to local func
+	//The line below creates the two binding with overlay page
+	// AddUser - name of the overlay page and function to make overlay page visible
+	// @bind-IsOverlayVisible - creates the binding
+	// UserAdded - is the callback function to local function
 	<AddUser @bind-IsOverlayVisible="AddUserOverlayVisible" UserAdded="OnUserAdded" />
 }
 @if (_users.Count <= 0)
@@ -25,36 +28,36 @@
 else
 {
 	<div class="row">
-		<table class="table blazor-grid">
+		<table class="table padding: 20px justify-content: left">
 			<thead class="thead-dark">
 				<tr>
 					<th>&nbsp;</th>
-					<th class="col-justify-start ">
-						<div class="col-header-content">
-							<div class="col-title-text">First Name</div>
+					<th>
+						<div>
+							<div class="padding: 20px justify-content: left ">First Name</div>
 						</div>
 					</th>
-					<th class="col-justify-start ">
-						<div class="col-header-content">
-							<div class="col-title-text">Last Name</div>
+					<th>
+						<div>
+							<div class="padding: 20px justify-content: left ">Last Name</div>
 						</div>
 					</th>
-					<th class="col-justify-start ">
-						<div class="col-header-content">
-							<div class="col-title-text">Address</div>
+					<th>
+						<div >
+							<div class="padding: 20px justify-content: left ">Address</div>
 						</div>
 					</th>
-					<th class="col-justify-start ">
-						<div class="col-header-content">
-							<div class="col-title-text">Phone</div>
+					<th>
+						<div class="padding: 20px justify-content: left ">
+							<div>Phone</div>
 						</div>
 					</th>
-					<th class="col-justify-start ">
-						<div class="col-header-content">
-							<div class="col-title-text">E-mail</div>
+					<th>
+						<div class="padding: 20px justify-content: left ">
+							<div >E-mail</div>
 						</div>
-					</th class="col-justify-start ">
-
+					</th>
+					<th>&nbsp;</th
 				</tr>
 			</thead>
 			<tbody>

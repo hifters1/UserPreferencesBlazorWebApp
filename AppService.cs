@@ -15,13 +15,65 @@ namespace UserPreferencesBlazorWebApp
 		}
 
 		//Preference methods
-		//GetAllPreferences
+		// GetAllPreferencesAsync - 
+		// GetPreferenceByIdAs - 
+		// UpdatePreferenceAsync - 
+		// DeletePreferenceA - 
+		// AddPreferenceAsyns - 
 		//
-		public async Task<IQueryable<User>> GetAllUserPreferencesAsyc()
+
+
+		//public async Task<IQueryable<User>> GetAllUserPreferencesAsyc()
+		//{
+		//	using var context = await _dbContextFactory.CreateDbContextAsync();
+		//	return (IQueryable<User>)await context.Users.Include(_ => _.PreferenceList).ToListAsync();
+		//}
+
+		public async Task<IEnumerable<Preference>> GetAllPreferencesAsyc()
 		{
 			using var context = await _dbContextFactory.CreateDbContextAsync();
-			return (IQueryable<User>)await context.Users.Include(_ => _.PreferenceList).ToListAsync();
+			return await context.Preferences.ToListAsync();
 		}
+
+		public async Task<Preference?> GetPreferenceByIdAsync(int id)
+		{
+			using var context = await _dbContextFactory.CreateDbContextAsync();
+			return await context.Preferences.FirstOrDefaultAsync(p => p.Id == id);
+		}
+
+		public async Task<Preference?> UpdatePreferenceAsync(Preference updatedPreference)
+		{
+			using var context = await _dbContextFactory.CreateDbContextAsync();
+			var existingPreference = await context.Preferences.FirstOrDefaultAsync(p => p.Id == updatedPreference.Id);
+
+			if (existingPreference is not null)
+			{
+				existingPreference.Name = updatedPreference.ToString();
+				await context.SaveChangesAsync();
+				return existingPreference;
+			}
+			return null;
+		}
+
+		public async Task DeletePreferenceAsync(int id)
+		{
+			using var context = await _dbContextFactory.CreateDbContextAsync();
+			var existingPreference = await context.Preferences.FirstOrDefaultAsync(p => p.Id == id);
+
+			if (existingPreference is not null)
+			{
+				context.Preferences.Remove(existingPreference);
+				await context.SaveChangesAsync();
+			}
+		}
+		public async Task<Preference> AddPreferenceAsync(Preference preference)
+		{
+			using var context = await _dbContextFactory.CreateDbContextAsync();
+			context.Preferences.Add(preference);
+			await context.SaveChangesAsync();
+			return preference;
+		}
+
 
 
 		//User methods

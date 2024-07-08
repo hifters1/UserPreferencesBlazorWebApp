@@ -1,0 +1,38 @@
+﻿@inject AppService _appService
+@using UserPreferencesBlazorWebApp.Models;
+
+
+<div class="overlay">
+	<div class="edit-form">
+		<h3>Add new genre</h3>
+		<div class="form-group">
+			<label for="preferenceName">Genre Name:</label>
+			<input type="text" class="form-control" id="preferenceName" @bind="@_preferenceName" />
+		</div>
+		<button class="btn btn-success" @onclick="AddPreferenceAsync">Save</button>
+		<button class="btn btn-dark" @onclick="CloseOverlayAsync">Cancel</button>
+	</div>
+</div>
+
+@code {
+	private string? _preferenceName;
+	[Parameter]
+	public EventCallback<Preference> PreferenceAdded { get; set; }
+	[Parameter]
+	public bool IsOverlayVisible { get; set; }
+	[Parameter]
+	public EventCallback<bool> IsOverlayVisibleChanged { get; set; }
+
+	private async Task AddPreferenceAsync()
+	{
+		var newPreference = new Preference { Name = _preferenceName! };
+		var preference = await _appService.AddPreferenceAsync(newPreference);
+		await PreferenceAdded.InvokeAsync(preference);
+		await IsOverlayVisibleChanged.InvokeAsync(false);
+	}
+
+	private async Task CloseOverlayAsync()
+	{
+		await IsOverlayVisibleChanged.InvokeAsync(false);
+	}
+}

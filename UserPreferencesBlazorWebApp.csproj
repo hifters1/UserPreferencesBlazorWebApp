@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <Folder Include="Components\Pages\UserPreferences\" />
-    <Folder Include="Components\Pages\Preferences\" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,96 @@
+﻿@page "/preferences";
+@rendermode InteractiveServer
+@inject AppService _appService
+@inject NavigationManager _navigationManager;
+@using UserPreferencesBlazorWebApp.Models;
+
+
+<h3>Available Music Genres</h3>
+<div class="row">
+	<div class="col col-3">
+		<button class="btn btn-primary btn-rounded" @onclick="AddPreference">Add Genre</button>
+	</div>
+</div>
+
+@if (AddOverlayVisible)
+{   
+	//The line below creates the two binding with overlay page
+	// AddPreference - name of the overlay page and function to make overlay page visible
+	// @bind-IsOverlayVisible - creates the binding
+	// PreferenceAdded - is the callback function to local function
+	<AddPreference @bind-IsOverlayVisible="AddOverlayVisible" PreferenceAdded="OnPreferenceAdded" />
+}
+
+@if (_preferences.Count <= 0)
+{
+	<p>No genre preferences found.</p>
+}
+else
+{
+	<div class="row">
+	<div class="row">
+		<table class="table padding: 20px justify-content: left">
+			<thead class="thead-dark">
+				<tr>
+					<th>&nbsp;</th>
+					<th>
+						<div>
+							<div class="padding: 20px justify-content: left ">Genre Preference</div>
+						</div>
+					</th>
+					<th>&nbsp;</th>
+				</tr>
+			</thead>
+			<tbody>
+					@foreach (Preference preference in _preferences)
+					{
+						<tr aria-rowindex="2">
+							<td>
+								<button class="btn btn-info" @onclick="() => EditPreference(preference.Id)">Edit</button>
+							</td>
+							<td class="col-justify-start ">@preference.Name</td>
+							<td class="col-justify-start">
+								<button class="btn btn-danger" @onclick="() => DeletePreference(preference)">Delete</button>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}
+
+@code {
+	private List<Preference> _preferences = new List<Preference>();
+	[Parameter]
+	public bool AddOverlayVisible { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		var result = await _appService.GetAllPreferencesAsyc();
+		_preferences = result.ToList();
+	}
+
+	private void AddPreference()
+	{
+		AddOverlayVisible = true;
+	}
+
+	private void OnPreferenceAdded(Preference newPreference)
+	{
+		_preferences.Add(newPreference);
+		StateHasChanged();
+	}
+
+
+	private async Task DeletePreference(Preference preference)
+	{
+		await _appService.DeletePreferenceAsync(preference!.Id);
+		_preferences.Remove(preference);
+	}
+	
+	private void EditPreference(int id)
+	{
+		_navigationManager.NavigateTo($"/editpreference/{id}");
+	}
+}

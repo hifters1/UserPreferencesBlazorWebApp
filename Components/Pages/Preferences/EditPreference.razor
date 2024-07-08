@@ -1,0 +1,41 @@
+﻿@page "/editpreference/{id:int}"
+@rendermode InteractiveServer
+@inject AppService _appService;
+@inject NavigationManager _navigationManager;
+@using UserPreferencesBlazorWebApp.Models;
+
+<h3>EditUser</h3>
+<div class="edit-form padding: 20px;">
+	<h3>Edit music genre</h3>
+	<div class="form-group">
+		<label for="firstName">Genre Name:</label>
+		<input type="text" class="form-control" id="preferenceName" @bind="@_preferenceName" />
+	</div>
+	<button class="btn btn-success" @onclick="UpdatePreferenceAsync">Save</button>
+	<button class="btn secondary" @onclick="CloseOverlayAsync">Cancel</button>
+</div>
+
+@code {
+	private string? _preferenceName;
+	[Parameter]
+	public int Id { get; set; }
+	private Preference? _preference;
+
+	protected async override Task OnInitializedAsync()
+	{
+		_preference = await _appService.GetPreferenceByIdAsync(Id);
+		_preferenceName = _preference.Name;
+	}
+
+	private async Task UpdatePreferenceAsync()
+	{
+		var newPref = new Preference { Id = Id, Name = _preferenceName! };
+		var pref = await _appService.UpdatePreferenceAsync(newPref);
+		_navigationManager.NavigateTo($"/preferences");
+	}
+
+	private void CloseOverlayAsync()
+	{
+		_navigationManager.NavigateTo($"/preferences");
+	}
+}
