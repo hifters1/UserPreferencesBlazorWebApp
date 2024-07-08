@@ -14,7 +14,6 @@ else
 {
 	<div>
 		<div class="edit-form parent">
-			<h3>Edit User</h3>
 			<div class="child inline-block-child">
 				<div class="form-group">
 					<label for="firstName" width="200">First Name:</label>
@@ -38,6 +37,7 @@ else
 				</div>
 			</div>
 			<div class="child inline-block-child">
+				<h3>Edit Preferences</h3>
 				<div class="multiselect">
 					<div id="checkboxes">
 						@foreach (Preference p in _prefs)   //loop through all available preferences
@@ -83,7 +83,7 @@ else
 	private User? _user;
 
 	private List<Preference> _prefs = new List<Preference>();    // list of all available preferences
-	private List<string> newprefs = new List<string>();          // listt of newly selected preferences
+	private List<string> newprefs = new List<string>();          // list of newly selected preferences
 	private List<string> oldprefs = new List<string>();          // list of previously selected preferences
 	private List<string> prefsToRemove = new List<string>();     // old preferences that got unchecked
 
@@ -133,32 +133,30 @@ else
 
 	private async Task UpdateUserPrefsAsync()
 	{
-
 		if (_user != null)
 		{
 			var newuserprefs = new User();
-
-			if (prefsToRemove.Count > 0)
+			if (prefsToRemove.Count > 0 && newprefs.Count == 0)
 			{
 				var userp = await _appService.DeleteUserPreferenceAsync(_user.Id, prefsToRemove);
-				var user = await _appService.AddUserAsync(_user, null);
+				var user = await _appService.AddUPUserAsync(_user, null);
 			}
 			if (newprefs.Count > 0)
 			{
-				var user = await _appService.AddUserAsync(_user, newprefs);
+				var user = await _appService.AddUPUserAsync(_user, newprefs);
 			}
 		}
 		else
 		{
-			//add a new user
+			//add a new user?? we should not be hitting this
 			var newUser = new User { FirstName = _firstName!, LastName = _lastName!, Address = _address!, Phone = _phone!, Email = _email! };
 			if (newprefs.Count == 0)
 			{
-				var user = await _appService.AddUserAsync(newUser, null);
+				var user = await _appService.AddUPUserAsync(newUser, null);
 			}
 			else
 			{
-				var user = await _appService.AddUserAsync(newUser, newprefs);
+				var user = await _appService.AddUPUserAsync(newUser, newprefs);
 			}
 		}
 		newprefs = null;

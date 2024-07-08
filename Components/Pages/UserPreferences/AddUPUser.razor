@@ -7,18 +7,28 @@
 		<h3>Add User</h3>
 		<div class="child form-group">
 			<label for="firstName">First Name:</label>
-			<input type="text" class="form-control" id="firstName" @bind="@_firstName" />
+			<input type="text" class="form-control" id="firstName" @bind="@_firstName" /><br />
 			<label for="lastName">Last Name:</label>
-			<input type="text" class="form-control" id="lastName" @bind="@_lastName" />
+			<input type="text" class="form-control" id="lastName" @bind="@_lastName" /><br />
+			<label for="firstName">Address:</label>
+			<input type="text" class="form-control" id="address" @bind="@_address" /><br />
+			<label for="lastName">Phone:</label>
+			<input type="text" class="form-control" id="phone" @bind="@_phone" /><br />
+			<label for="firstName">Email:</label>
+			<input type="text" class="form-control" id="email" @bind="@_email" /><br />
 		</div>
 		<div class="child form-group">
-			<select multiple id="prefs">
-				<option value="Rock">Rock</option>
-				<option value="Metal">Metal</option>
-				<option value="Country">Country</option>
-				<option value="Jazz">Jazz</option>
-				<option value="Pop">Pop</option>
-			</select>
+			<div class="multiselect">
+				<div id="checkboxes">
+					@foreach (Preference p in _prefs)   //loop through all available preferences
+					{
+						<label for="@p.Name">
+							<input type="checkbox" id="@p.Name" value="@p.Name" @onchange="@((e) => CheckboxChanged(e, p.Name))" />@p.Name
+						</label>
+						<br />
+					}
+				</div>
+			</div>
 		</div>
 		<br />
 		<button class="btn btn-success" @onclick="AddUserAsync">Save</button>
@@ -29,6 +39,17 @@
 @code {
 	private string? _firstName;
 	private string? _lastName;
+	private string? _address;
+	private string? _phone;
+	private string? _email;
+	
+	private bool selPrefs = false;  //used for selection list to show previously selected preferences
+
+	private User? _user;
+
+	private List<Preference> _prefs = new List<Preference>();    // list of all available preferences
+	private List<string> newprefs = new List<string>();          // listt of newly selected preferences
+
 	[Parameter]
 	public EventCallback<User> UPUserAdded { get; set; }
 	[Parameter]
@@ -36,12 +57,36 @@
 	[Parameter]
 	public EventCallback<bool> IsOverlayVisibleChanged { get; set; }
 
+	protected override async Task OnInitializedAsync()
+	{
+		var prefresult = await _appService.GetAllPreferencesAsyc();
+		_prefs = prefresult.ToList();
+	}
+	
 	private async Task AddUserAsync()
 	{
-		var newUser = new User { FirstName = _firstName!, LastName = _lastName! };
-		var user = await _appService.AddUserAsync(newUser, null);
+		var newUser = new User { FirstName = _firstName!, LastName = _lastName!, Address = _address!, Phone = _phone!, Email = _email! };
+		var user = await _appService.AddNewUPUserAsync(newUser, newprefs);
 		await UPUserAdded.InvokeAsync(user);
 		await IsOverlayVisibleChanged.InvokeAsync(false);
+	}
+
+	private void CheckboxChanged(ChangeEventArgs e, string key)
+	{
+		if ((bool)e.Value)
+		{
+			if (!newprefs.Contains(key))
+			{
+				newprefs.Add(key);
+			}
+		}
+		else
+		{
+			if (newprefs.Contains(key))
+			{
+				newprefs.Remove(key);
+			}
+		}
 	}
 
 	private async Task CloseOverlayAsync()
