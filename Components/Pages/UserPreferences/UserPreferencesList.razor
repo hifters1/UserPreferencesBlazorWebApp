@@ -1,0 +1,184 @@
+﻿@page "/userpreferences";
+@rendermode InteractiveServer
+@inject AppService _appService;
+@inject NavigationManager _navigationManager;
+@using UserPreferencesBlazorWebApp.Models;
+
+<h3>Listing of Users along with their preferences</h3>
+<div class="row">
+	<div class="col col-3">
+		<button class="btn btn-primary btn-rounded" @onclick="AddUser">Add User</button>
+	</div>
+</div>
+
+@if (AddUPUserOverlayVisible)
+{
+	<AddUPUser @bind-IsOverlayVisible="AddUPUserOverlayVisible" UPUserAdded="OnUserAdded" />
+}
+
+
+@if (_user.Count <= 0)
+{
+	<p>No preferences found.</p>
+}
+else
+{
+	<div class="row">
+		<table class="table">
+			<thead class="thead-dark">
+				<tr>
+					<th>
+						<div class="col-header-content">
+							<div class="col-title-text">User Action</div>
+						</div>
+					</th>
+					<th class="" aria-sort="none" scope="col">
+						<div class="col-header-content">
+							<div class="col-title-text">First Name</div>
+						</div>
+					</th>
+					<th class="col-justify-start " aria-sort="none" scope="col">
+						<div class="col-header-content">
+							<div class="col-title-text">Last Name</div>
+						</div>
+					</th>
+					<th>
+						<div>
+							<div class="padding: 20px justify-content: left ">Address</div>
+						</div>
+					</th>
+					<th>
+						<div class="padding: 20px justify-content: left ">
+							<div>Phone</div>
+						</div>
+					</th>
+					<th>
+						<div class="padding: 20px justify-content: left ">
+							<div>E-mail</div>
+						</div>
+					</th>
+					<th class="col-justify-start " aria-sort="none" scope="col">
+						<div class="col-header-content">
+							<div class="col-title-text">Preference</div>
+						</div>
+					</th>
+					<th>
+						<div class="col-header-content">
+							<div class="col-title-text">Preference Action</div>
+						</div>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (User user in _user)
+				{
+					@if (user.PreferenceList.Count > 0)
+					{
+						@for (int i = 0; i < user.PreferenceList.Count; i++)
+						{
+							@if (i >= 1)
+							{
+								<tr>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td class="col-justify-start ">@user.PreferenceList[i].PreferenceName</td>
+									<td>&nbsp;</td>
+								</tr>
+							}
+							else
+							{
+								<tr aria-rowindex="2">
+									<td>
+										 <button class="btn btn-info" @onclick="() => EditDetails(user.Id)">Edit</button>
+									</td>
+									<td class="col-justify-start ">@user.FirstName</td>
+									<td class="col-justify-start ">@user.LastName</td>
+									<td class="col-justify-start ">@user.Address</td>
+									<td class="col-justify-start ">@user.Phone</td>
+									<td class="col-justify-start ">@user.Email</td>
+									@if (user.PreferenceList[i].PreferenceName == null)
+									{
+										<td>&nbsp;</td>
+										<td>
+											<button class="btn btn-info" @onclick="() => EditPreferences(user.Id)">Add Preferences</button>
+										</td>
+									} else
+									{
+										<td class="col-justify-start ">@user.PreferenceList[i].PreferenceName</td>
+										<td><button class="btn btn-info" @onclick="() => EditPreferences(user.Id)">Edit Preferences</button></td>
+									}
+								</tr>
+							}
+						}
+					}
+					else
+					{
+						<tr aria-rowindex="2">
+							<td class="col-justify-start ">@user.FirstName</td>
+							<td class="col-justify-start ">@user.LastName</td>
+							<td class="col-justify-start ">@user.Address</td>
+							<td class="col-justify-start ">@user.Phone</td>
+							<td class="col-justify-start ">@user.Email</td>
+							<td>&nbsp;</td>
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+@code {
+	private List<User> _user = new List<User>();
+	private List<UserPreference> _preferences = new List<UserPreference>();
+	private List<Preference> _prefs = new List<Preference>();
+	private List<Preference> _old_prefs = new List<Preference>();
+	private List<Preference> _new_prefs = new List<Preference>();
+	[Parameter]
+	public int Id { get; set; }
+	[Parameter]
+	public bool AddUPUserOverlayVisible { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		var result = await _appService.GetAllUserPreferencesAsyc();
+		_user = result.ToList();
+	}
+
+	private void AddUser()
+	{
+		AddUPUserOverlayVisible = true;
+	}
+
+	private void EditDetails(int id)
+	{
+		_navigationManager.NavigateTo($"/editupuser/{id}");
+	}
+
+	private void EditPreferences(int id)
+	{
+		_navigationManager.NavigateTo($"/edituppreferences/{id}");
+	}
+	
+	private void OnUserAdded(User newUser)
+	{
+		_user.Add(newUser);
+		StateHasChanged();
+	}
+	
+	private void ViewDetails(UserPreference preference)
+	{
+		_navigationManager.NavigateTo($"/userpreferences/{preference.Id}");
+	}
+
+	private async Task DeletePreference(UserPreference preference)
+	{
+		await _appService.DeletePreferenceAsync(preference!.Id);
+		_preferences.Remove(preference);
+	}
+
+}

@@ -1,0 +1,51 @@
+﻿@inject AppService _appService
+@using UserPreferencesBlazorWebApp.Models;
+
+
+<div class="overlay">
+	<div class="parent edit-form">
+		<h3>Add User</h3>
+		<div class="child form-group">
+			<label for="firstName">First Name:</label>
+			<input type="text" class="form-control" id="firstName" @bind="@_firstName" />
+			<label for="lastName">Last Name:</label>
+			<input type="text" class="form-control" id="lastName" @bind="@_lastName" />
+		</div>
+		<div class="child form-group">
+			<select multiple id="prefs">
+				<option value="Rock">Rock</option>
+				<option value="Metal">Metal</option>
+				<option value="Country">Country</option>
+				<option value="Jazz">Jazz</option>
+				<option value="Pop">Pop</option>
+			</select>
+		</div>
+		<br />
+		<button class="btn btn-success" @onclick="AddUserAsync">Save</button>
+		<button class="btn secondary" @onclick="CloseOverlayAsync">Cancel</button>
+	</div>
+</div>
+
+@code {
+	private string? _firstName;
+	private string? _lastName;
+	[Parameter]
+	public EventCallback<User> UPUserAdded { get; set; }
+	[Parameter]
+	public bool IsOverlayVisible { get; set; }
+	[Parameter]
+	public EventCallback<bool> IsOverlayVisibleChanged { get; set; }
+
+	private async Task AddUserAsync()
+	{
+		var newUser = new User { FirstName = _firstName!, LastName = _lastName! };
+		var user = await _appService.AddUserAsync(newUser, null);
+		await UPUserAdded.InvokeAsync(user);
+		await IsOverlayVisibleChanged.InvokeAsync(false);
+	}
+
+	private async Task CloseOverlayAsync()
+	{
+		await IsOverlayVisibleChanged.InvokeAsync(false);
+	}
+}

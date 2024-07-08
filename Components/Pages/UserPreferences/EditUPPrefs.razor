@@ -1,0 +1,231 @@
+﻿@page "/edituppreferences/{id:int}"
+@rendermode InteractiveServer
+@inject AppService _appService;
+@inject NavigationManager _navigationManager;
+@using UserPreferencesBlazorWebApp.Models;
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@if (_user == null)
+{
+	<p>User not found..</p>
+}
+else
+{
+	<div>
+		<div class="edit-form parent">
+			<h3>Edit User</h3>
+			<div class="child inline-block-child">
+				<div class="form-group">
+					<label for="firstName" width="200">First Name:</label>
+					<input type="text" class="form-control" width="200" id="firstName" @bind="@_firstName" disabled />
+				</div>
+				<div class="form-group">
+					<label for="firstName" width="200">Last Name:</label>
+					<input type="text" class="form-control" width="200" id="lastName" @bind="@_lastName" disabled />
+				</div>
+				<div class="form-group">
+					<label for="firstName" width="200">Address:</label>
+					<input type="text" class="form-control" width="200" id="address" @bind="@_address" disabled />
+				</div>
+				<div class="form-group">
+					<label for="firstName" width="200">Phone:</label>
+					<input type="text" class="form-control" width="200" id="phone" @bind="@_phone" disabled />
+				</div>
+				<div class="form-group">
+					<label for="firstName" width="200">E-mail:</label>
+					<input type="text" class="form-control" width="200" id="email" @bind="@_email" disabled />
+				</div>
+			</div>
+			<div class="child inline-block-child">
+				<div class="multiselect">
+					<div id="checkboxes">
+						@foreach (Preference p in _prefs)   //loop through all available preferences
+						{
+							@foreach (var item in items)
+							{
+								@if (item.Value == p.Name)
+								{
+									<label for="@item.Value.ToString()">
+										<input type="checkbox" id="@item.Value" value="@item.Value" checked="checked" @onchange="@((e) => CheckboxChanged(e, item.Value))" />@item.Value
+									</label>
+									<br />
+									selPrefs = true;
+								}
+							}
+							@if (!selPrefs)
+							{
+								<label for="@p.Name">
+									<input type="checkbox" id="@p.Name" value="@p.Name" @onchange="@((e) => CheckboxChanged(e, p.Name))" />@p.Name
+								</label>
+								<br />
+							}
+							selPrefs = false;
+						}
+					</div>
+				</div>
+			</div>
+			<br />
+			<button class="btn btn-success" @onclick="UpdateUserPrefsAsync">Save</button>
+			<button class="btn secondary" @onclick="CloseOverlayAsync">Cancel</button>
+		</div>
+	</div>
+}
+
+@code {
+	private string? _firstName;  //capture from overlay when creating new user
+	private string? _lastName;   //capture from overlay when creating new user
+	private string? _address;
+	private string? _phone;
+	private string? _email;
+	private bool selPrefs = false;  //used for selection list to show previously selected preferences
+
+	private User? _user;
+
+	private List<Preference> _prefs = new List<Preference>();    // list of all available preferences
+	private List<string> newprefs = new List<string>();          // listt of newly selected preferences
+	private List<string> oldprefs = new List<string>();          // list of previously selected preferences
+	private List<string> prefsToRemove = new List<string>();     // old preferences that got unchecked
+
+	List<SelectListItem> items = new List<SelectListItem>();     // selection list object to hold the previously selected preference and used
+																	// for controlling the checkmark  when the preference list is displayed
+
+	[Parameter]
+	public int Id { get; set; }   // capture the user Id when passed into the page
+
+	protected override async Task OnInitializedAsync()
+	{
+		_user = await _appService.GetUserByIdAsync(Id);
+		var prefresult = await _appService.GetAllPreferencesAsyc();
+		_prefs = prefresult.ToList();
+
+		//  Initialize/build variables to control the objects being displayed
+		_firstName = _user.FirstName;
+		_lastName = _user.LastName;
+		_address = _user.Address;
+		_phone = _user.Phone;
+		_email = _user.Email;
+
+		if(_user.PreferenceList is not null)
+		{
+			
+			for (int i = 0; i < _user.PreferenceList.Count; i++)    // looping through previously selected preferences
+			{
+				foreach (Preference p in _prefs)   //loop through all available preferences
+				{
+					if (_user.PreferenceList[i].PreferenceName == p.Name)  //check to see if saved preferences are preference list and select
+					{
+						var item = new SelectListItem
+							{
+								Value = p.Name.ToString(),
+								Text = p.Name,
+								Selected = true
+							};                          // Creating the selection items to control checkboxes
+						items.Add(item);
+						oldprefs.Add(p.Name);       // list of strings for old preferences
+					}
+				}
+			};
+		}
+
+	}
+
+
+	private async Task UpdateUserPrefsAsync()
+	{
+
+		if (_user != null)
+		{
+			var newuserprefs = new User();
+
+			if (prefsToRemove.Count > 0)
+			{
+				var userp = await _appService.DeleteUserPreferenceAsync(_user.Id, prefsToRemove);
+				var user = await _appService.AddUserAsync(_user, null);
+			}
+			if (newprefs.Count > 0)
+			{
+				var user = await _appService.AddUserAsync(_user, newprefs);
+			}
+		}
+		else
+		{
+			//add a new user
+			var newUser = new User { FirstName = _firstName!, LastName = _lastName!, Address = _address!, Phone = _phone!, Email = _email! };
+			if (newprefs.Count == 0)
+			{
+				var user = await _appService.AddUserAsync(newUser, null);
+			}
+			else
+			{
+				var user = await _appService.AddUserAsync(newUser, newprefs);
+			}
+		}
+		newprefs = null;
+		prefsToRemove = null;
+		_navigationManager.NavigateTo($"/userpreferences");
+	}
+
+	private void CloseOverlayAsync()
+	{
+		_navigationManager.NavigateTo($"/userpreferences");
+	}
+
+	private void CheckboxChanged(ChangeEventArgs e, string key)
+	{
+		var i = this.items.FirstOrDefault(i => i.Value == key);   // items are the originally selected preferences when the page was rendered
+		if (i != null)     // if an original checkbox is clicked
+		{
+			i.Selected = (bool)e.Value;
+			if (i.Selected)
+			{
+				// Need logic to put an original preference back
+				if (!oldprefs.Contains(key))
+				{
+					oldprefs.Add(key);   // put the key back
+					if (prefsToRemove.Contains(key))
+					{
+						prefsToRemove.Remove(key);
+					}
+				}
+			}
+			else
+			{
+				if (oldprefs.Contains(key))
+				{
+					oldprefs.Remove(key);
+					prefsToRemove.Add(key);   // capturing an old preference to remove
+				}
+				if (newprefs.Contains(key))
+				{
+					newprefs.Remove(key);
+				}
+			}
+		}
+		else
+		{
+			if ((bool)e.Value)
+			{
+				if (!newprefs.Contains(key))
+				{
+					if (!prefsToRemove.Contains(key))
+					{
+						newprefs.Add(key);
+					}
+					else
+					{
+						oldprefs.Add(key);
+						prefsToRemove.Remove(key);
+					}
+				}
+			}
+			else
+			{
+				if (newprefs.Contains(key))
+				{
+					newprefs.Remove(key);
+				}
+			}
+		}
+	}
+}

@@ -22,13 +22,6 @@ namespace UserPreferencesBlazorWebApp
 		// AddPreferenceAsyns - 
 		//
 
-
-		//public async Task<IQueryable<User>> GetAllUserPreferencesAsyc()
-		//{
-		//	using var context = await _dbContextFactory.CreateDbContextAsync();
-		//	return (IQueryable<User>)await context.Users.Include(_ => _.PreferenceList).ToListAsync();
-		//}
-
 		public async Task<IEnumerable<Preference>> GetAllPreferencesAsyc()
 		{
 			using var context = await _dbContextFactory.CreateDbContextAsync();
@@ -137,7 +130,86 @@ namespace UserPreferencesBlazorWebApp
 		}
 
 		//UserPreference methods
+		// GetAllUserPreferencesAsyc - 
+		// AddUserAsync - 
+		// DeleteUserPreferenceAsync - 
+		// DeleteNullUserPreferenceAsync - 
 		//
-		//
+
+		public async Task<ICollection<User>> GetAllUserPreferencesAsyc()
+		{
+			using var context = await _dbContextFactory.CreateDbContextAsync();
+			return await context.Users.Include(_ => _.PreferenceList).ToListAsync();
+		}
+		public async Task<User> AddUserAsync(User user, List<string> prefs)
+		{
+			using var context = await _dbContextFactory.CreateDbContextAsync();
+
+			//Load new user info into user table
+			if (user.Id == 0)  //this is a new user, skip for an existing user
+			{
+				context.Users.Add(user);
+				await context.SaveChangesAsync();
+			}
+
+			//Update UserPreference table with the just loaded user id
+			//Check null prefs
+			if (prefs == null)
+			{
+				var newUserPref = new UserPreference();
+				newUserPref.PreferenceName = null;
+				newUserPref.UserId = user.Id;
+				context.UserPreferences.Add(newUserPref);
+				await context.SaveChangesAsync();
+				return user;
+			}
+			else
+			{
+				for (int i = 0; i < prefs.Count; i++)
+				{
+					var newUserPref = new UserPreference();
+					newUserPref.PreferenceName = prefs[i].ToString();
+					newUserPref.UserId = user.Id;
+					if (((user.PreferenceList.Count == 1) && (user.PreferenceList[0].PreferenceName == null) && (i == 0))||(user.PreferenceList == null))
+					{
+						DeleteNullUserPreferenceAsync(user.Id);       //having to delete the null preference name record as
+																	  //the update is inserting a new record leaving the null record in place
+						context.UserPreferences.Update(newUserPref);
+					}
+					else
+					{
+						context.UserPreferences.Add(newUserPref);
+					}
+					await context.SaveChangesAsync();
+				}
+				return user;
+			}
+
+		}
+		public async Task<UserPreference> DeleteUserPreferenceAsync(int id, List<string> pref)
+		{
+			using var context = await _dbContextFactory.CreateDbContextAsync();
+			var existingPreference = await context.UserPreferences.FirstOrDefaultAsync(p => p.UserId == id);
+
+			if (existingPreference is not null)
+			{
+				context.UserPreferences.Remove(existingPreference);
+				await context.SaveChangesAsync();
+			}
+			return null;
+		}
+		public async Task<UserPreference> DeleteNullUserPreferenceAsync(int id)
+		{
+			using var context = await _dbContextFactory.CreateDbContextAsync();
+			var existingPreference = await context.UserPreferences.FirstOrDefaultAsync(p => p.UserId == id);
+
+			if (existingPreference is not null)
+			{
+				context.UserPreferences.Remove(existingPreference);
+				await context.SaveChangesAsync();
+			}
+			return null;
+		}
+
 	}
 }

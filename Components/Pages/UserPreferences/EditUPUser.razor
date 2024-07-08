@@ -1,0 +1,75 @@
+﻿@page "/editupuser/{id:int}"
+@rendermode InteractiveServer
+@inject AppService _appService;
+@inject NavigationManager _navigationManager;
+
+@using UserPreferencesBlazorWebApp.Models;
+
+@if (_user == null)
+{
+	<p>User not found..</p>
+}
+else
+{
+	<div width="400">
+		<div class="edit-form">
+			<h3>Edit User</h3>
+			<div class="form-group">
+				<label for="firstName" width="200">First Name:</label>
+				<input type="text" class="form-control" width="200" id="firstName" @bind="@_firstName" />
+			</div>
+			<div class="form-group">
+				<label for="lastName">Last Name:</label>
+				<input type="text" class="form-control" width="200" id="lastName" @bind="@_lastName" />
+			</div><br />
+			<div class="form-group">
+				<label for="firstName">Address:</label>
+				<input type="text" class="form-control" id="address" @bind="@_address" />
+			</div>
+			<div class="form-group">
+				<label for="lastName">Phone:</label>
+				<input type="text" class="form-control" id="phone" @bind="@_phone" />
+			</div>
+			<div class="form-group">
+				<label for="firstName">E-mail:</label>
+				<input type="text" class="form-control" id="email" @bind="@_email" />
+			</div>
+			<button class="btn btn-success" @onclick="UpdateUserAsync">Save</button>
+			<button class="btn secondary" @onclick="CloseOverlayAsync">Cancel</button>
+		</div>
+	</div>
+}
+
+@code {
+	private string? _firstName;
+	private string? _lastName;
+	private string? _address;
+	private string? _phone;
+	private string? _email;
+	private User? _user;
+
+	[Parameter]
+	public int Id { get; set; }
+
+	protected async override Task OnInitializedAsync()
+	{
+		_user = await _appService.GetUserByIdAsync(Id);
+		_firstName = _user.FirstName;
+		_lastName = _user.LastName;
+		_address = _user.Address;
+		_phone = _user.Phone;
+		_email = _user.Email;
+	}
+
+	private async Task UpdateUserAsync()
+	{
+		var newUser = new User { Id = Id, FirstName = _firstName!, LastName = _lastName!, Address = _address!, Phone = _phone!, Email = _email! };
+		var user = await _appService.UpdateUserAsync(newUser);
+		_navigationManager.NavigateTo($"/userpreferences");
+	}
+
+	private void CloseOverlayAsync()
+	{
+		_navigationManager.NavigateTo($"/userpreferences");
+	}
+}
