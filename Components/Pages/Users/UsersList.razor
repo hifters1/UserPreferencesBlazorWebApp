@@ -1,0 +1,120 @@
+﻿@page "/users";
+@rendermode InteractiveServer
+@inject AppService _appService
+
+@inject NavigationManager _navigationManager;
+@using UserPreferencesBlazorWebApp.Models;
+
+
+<h3>Available Users</h3>
+<div class="row">
+	<div class="col col-3">
+		<button class="btn btn-primary btn-rounded" @onclick="AddUser">Add User</button>
+	</div>
+</div>
+
+@if (AddUserOverlayVisible)
+{
+	//overlay file                                         callback to local func
+	<AddUser @bind-IsOverlayVisible="AddUserOverlayVisible" UserAdded="OnUserAdded" />
+}
+@if (_users.Count <= 0)
+{
+	<p>No Users found.</p>
+}
+else
+{
+	<div class="row">
+		<table class="table blazor-grid">
+			<thead class="thead-dark">
+				<tr>
+					<th>&nbsp;</th>
+					<th class="col-justify-start ">
+						<div class="col-header-content">
+							<div class="col-title-text">First Name</div>
+						</div>
+					</th>
+					<th class="col-justify-start ">
+						<div class="col-header-content">
+							<div class="col-title-text">Last Name</div>
+						</div>
+					</th>
+					<th class="col-justify-start ">
+						<div class="col-header-content">
+							<div class="col-title-text">Address</div>
+						</div>
+					</th>
+					<th class="col-justify-start ">
+						<div class="col-header-content">
+							<div class="col-title-text">Phone</div>
+						</div>
+					</th>
+					<th class="col-justify-start ">
+						<div class="col-header-content">
+							<div class="col-title-text">E-mail</div>
+						</div>
+					</th class="col-justify-start ">
+
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (User user in _users)
+				{
+					<tr aria-rowindex="2">
+						<td>
+							<button class="btn btn-info" @onclick="() => EditUser(user.Id)">Edit</button>
+						</td>
+						<td class="col-justify-start ">@user.FirstName</td>
+						<td class="col-justify-start ">@user.LastName</td>
+						<td class="col-justify-start ">@user.Address</td>
+						<td class="col-justify-start ">@user.Phone</td>
+						<td class="col-justify-start ">@user.Email</td>
+						<td class="col-justify-start">
+							@* <button class="btn btn-info" @onclick="() => ViewDetails(user)">View Details</button> *@
+							<button class="btn btn-danger" @onclick="() => DeleteUser(user)">Delete</button>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+@code {
+	private List<User> _users = new List<User>();
+	[Parameter]
+	public bool AddUserOverlayVisible { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		var result = await _appService.GetAllUsersAsyc();
+		_users = result.ToList();
+	}
+
+	private void AddUser()
+	{
+		AddUserOverlayVisible = true;
+	}
+
+	private void OnUserAdded(User newUser)
+	{
+		_users.Add(newUser);
+		StateHasChanged();
+	}
+
+	private void ViewDetails(User user)
+	{
+		_navigationManager.NavigateTo($"/users/{user.Id}");
+	}
+
+	private async Task DeleteUser(User user)
+	{
+		await _appService.DeleteUserAsync(user!.Id);
+		_users.Remove(user);
+	}
+
+	private void EditUser(int id)
+	{
+		_navigationManager.NavigateTo($"/edituser/{id}");
+	}
+}

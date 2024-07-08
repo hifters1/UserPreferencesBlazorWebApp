@@ -1,0 +1,64 @@
+﻿@inject AppService _appService
+@using UserPreferencesBlazorWebApp.Models;
+
+<div class="overlay">
+	<div class="edit-form">
+		<h3>Add User</h3>
+		<div class="form-group">
+			<label for="firstName">First Name:</label><label hidden id="required" class="validation-message" >* Required</label>
+			<input type="text" class="form-control" id="firstName" @bind="@_firstName" />
+		</div>
+		<div class="form-group">
+			<label for="lastName">Last Name:</label>
+			<input type="text" class="form-control" id="lastName" @bind="@_lastName" />
+		</div>
+		<div class="form-group">
+			<label for="firstName">First Name:</label>
+			<input type="text" class="form-control" id="firstName" @bind="@_address" />
+		</div>
+		<div class="form-group">
+			<label for="lastName">Last Name:</label>
+			<input type="text" class="form-control" id="lastName" @bind="@_phone" />
+		</div>
+		<div class="form-group">
+			<label for="firstName">First Name:</label>
+			<input type="text" class="form-control" id="firstName" @bind="@_email" />
+		</div>
+		<button class="btn btn-success" @onclick="AddUserAsync">Save</button>
+		<button class="btn secondary" @onclick="CloseOverlayAsync">Cancel</button>
+	</div>
+</div>
+
+@code {
+	private string? _firstName;
+	private string? _lastName;
+	private string? _address;
+	private string? _phone;
+	private string? _email;
+	[Parameter]
+	public EventCallback<User> UserAdded { get; set; }
+	[Parameter]
+	public bool IsOverlayVisible { get; set; }
+	[Parameter]
+	public EventCallback<bool> IsOverlayVisibleChanged { get; set; }
+
+	private async Task AddUserAsync()
+	{
+//		if( _firstName.Trim() == null)
+//		{
+//			//_firstName.
+//		} else
+//		{
+			var newUser = new User { FirstName = _firstName!, LastName = _lastName!, Address = _address!, Phone = _phone!, Email = _email! };
+			var user = await _appService.AddUserAsync(newUser);
+			await UserAdded.InvokeAsync(user);
+			await IsOverlayVisibleChanged.InvokeAsync(false);   //trigger event callback
+
+//		}
+	}
+
+	private async Task CloseOverlayAsync()
+	{
+		await IsOverlayVisibleChanged.InvokeAsync(false);  //cancel updates and go back to users page without saving 
+	}
+}
