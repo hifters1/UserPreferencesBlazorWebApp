@@ -72,7 +72,7 @@ else
 			<tbody>
 				@foreach (User user in _user)
 				{
-					@if (user.PreferenceList.Count > 0)
+					@if ((user.PreferenceList.Count > 0)||(user.PreferenceList != null))
 					{
 						@for (int i = 0; i < user.PreferenceList.Count; i++)
 						{
@@ -118,14 +118,14 @@ else
 					else
 					{
 						<tr aria-rowindex="2">
-							<td>&nbsp;</td>
+							<td><button class="btn btn-info" @onclick="() => EditDetails(user.Id)">Edit</button></td>
 							<td class="col-justify-start ">@user.FirstName</td>
 							<td class="col-justify-start ">@user.LastName</td>
 							<td class="col-justify-start ">@user.Address</td>
 							<td class="col-justify-start ">@user.Phone</td>
 							<td class="col-justify-start ">@user.Email</td>
 							<td>&nbsp;</td>
-							<td>&nbsp;</td>
+							<td><button class="btn btn-info" @onclick="() => EditPreferences(user.Id)">Add Preferences</button></td>
 						</tr>
 					}
 				}
