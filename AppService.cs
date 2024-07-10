@@ -34,14 +34,14 @@ namespace UserPreferencesBlazorWebApp
 			return await context.Preferences.FirstOrDefaultAsync(p => p.Id == id);
 		}
 
-		public async Task<Preference?> UpdatePreferenceAsync(Preference updatedPreference)
+		public async Task<Preference?> UpdatePreferenceAsync(int id,Preference pref)
 		{
 			using var context = await _dbContextFactory.CreateDbContextAsync();
-			var existingPreference = await context.Preferences.FirstOrDefaultAsync(p => p.Id == updatedPreference.Id);
+			var existingPreference = await context.Preferences.FirstOrDefaultAsync(p => p.Id == id);
 
 			if (existingPreference is not null)
 			{
-				existingPreference.Name = updatedPreference.ToString();
+				existingPreference.Name = pref.Name;
 				await context.SaveChangesAsync();
 				return existingPreference;
 			}

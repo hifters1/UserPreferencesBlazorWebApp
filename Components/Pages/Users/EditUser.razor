@@ -32,7 +32,7 @@
 </div>
 
 @code {
-	private string? _firstName;
+	private string? _firstName;  // local variables for inputs
 	private string? _lastName;
 	private string? _address;
 	private string? _phone;
@@ -44,21 +44,26 @@
 	protected async override Task OnInitializedAsync()
 	{
 		_user = await _appService.GetUserByIdAsync(Id);
-		_firstName = _user.FirstName;
+		_firstName = _user.FirstName;   // load local variables from database
 		_lastName = _user.LastName;
 		_address = _user.Address;
 		_phone = _user.Phone;
 		_email = _user.Email;
-		
+
 	}
 
-	private async Task UpdateUserAsync()
+	private async Task UpdateUserAsync()   // load edited user to database
 	{
-		var newUser = new User { Id = Id, FirstName = _firstName!, LastName = _lastName!, Address = _address!, Phone = _phone!, Email = _email! };
-		var user = await _appService.UpdateUserAsync(newUser);
-		//await UPUserEdited.InvokeAsync(user);
-		//await IsOverlayVisibleChanged.InvokeAsync(false);
-		_navigationManager.NavigateTo($"/users");
+		if (_firstName == null)
+		{
+			_firstName = "* Rquired";  // cheesy validation
+		}
+		else
+		{
+			var newUser = new User { Id = Id, FirstName = _firstName!, LastName = _lastName!, Address = _address!, Phone = _phone!, Email = _email! };
+			var user = await _appService.UpdateUserAsync(newUser);
+			_navigationManager.NavigateTo($"/users");
+		}
 	}
 
 	private void CloseOverlayAsync()

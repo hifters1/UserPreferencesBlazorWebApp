@@ -41,7 +41,7 @@ else
 					<th>&nbsp;</th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody>   @* build the rows of preferences    *@
 					@foreach (Preference preference in _preferences)
 					{
 						<tr aria-rowindex="2">
@@ -67,29 +67,29 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		var result = await _appService.GetAllPreferencesAsyc();
+		var result = await _appService.GetAllPreferencesAsyc();    // get all preferences from database
 		_preferences = result.ToList();
 	}
 
 	private void AddPreference()
 	{
-		AddOverlayVisible = true;
+		AddOverlayVisible = true;   // show overlay
 	}
 
 	private void OnPreferenceAdded(Preference newPreference)
 	{
-		_preferences.Add(newPreference);
-		StateHasChanged();
+		_preferences.Add(newPreference);   // add preference to database
+		StateHasChanged();                 // trigger state change for 2-way binding
 	}
 
 
-	private async Task DeletePreference(Preference preference)
+	private async Task DeletePreference(Preference preference)   // delete seleted preference
 	{
 		await _appService.DeletePreferenceAsync(preference!.Id);
 		_preferences.Remove(preference);
 	}
 	
-	private void EditPreference(int id)
+	private void EditPreference(int id)   // call edit preference page
 	{
 		_navigationManager.NavigateTo($"/editpreference/{id}");
 	}

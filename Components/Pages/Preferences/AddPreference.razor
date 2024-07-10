@@ -1,6 +1,6 @@
 ﻿@inject AppService _appService
 @using UserPreferencesBlazorWebApp.Models;
-
+@using System.ComponentModel.DataAnnotations;
 
 <div class="overlay">
 	<div class="edit-form">
@@ -15,23 +15,31 @@
 </div>
 
 @code {
-	private string? _preferenceName;
+	private string? _preferenceName;                                     // local variable to capture user input
+	private bool lblRequiredVisible = false;
 	[Parameter]
-	public EventCallback<Preference> PreferenceAdded { get; set; }
+	public EventCallback<Preference> PreferenceAdded { get; set; }       // eventcallback for 2-way binding
 	[Parameter]
-	public bool IsOverlayVisible { get; set; }
+	public bool IsOverlayVisible { get; set; }                           // controls the overlay page
 	[Parameter]
-	public EventCallback<bool> IsOverlayVisibleChanged { get; set; }
+	public EventCallback<bool> IsOverlayVisibleChanged { get; set; }     // tracks event status
 
-	private async Task AddPreferenceAsync()
+	private async Task AddPreferenceAsync()                              //
 	{
-		var newPreference = new Preference { Name = _preferenceName! };
-		var preference = await _appService.AddPreferenceAsync(newPreference);
-		await PreferenceAdded.InvokeAsync(preference);
-		await IsOverlayVisibleChanged.InvokeAsync(false);
+		if (_preferenceName != null)
+		{
+			var newPreference = new Preference { Name = _preferenceName! }; // creates new preference object to load into database
+			var preference = await _appService.AddPreferenceAsync(newPreference);  // adds new preference to table
+			await PreferenceAdded.InvokeAsync(preference);                  // actual eventcallback
+			await IsOverlayVisibleChanged.InvokeAsync(false);               // hides overlay
+		}
+		else
+		{
+			_preferenceName = "* Required";    // cheesy validation
+		}
 	}
 
-	private async Task CloseOverlayAsync()
+	private async Task CloseOverlayAsync()                               // close/cancel overlay
 	{
 		await IsOverlayVisibleChanged.InvokeAsync(false);
 	}

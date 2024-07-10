@@ -41,7 +41,7 @@ else
 }
 
 @code {
-	private string? _firstName;
+	private string? _firstName;  // local variables tied to the inputs
 	private string? _lastName;
 	private string? _address;
 	private string? _phone;
@@ -54,7 +54,7 @@ else
 	protected async override Task OnInitializedAsync()
 	{
 		_user = await _appService.GetUserByIdAsync(Id);
-		_firstName = _user.FirstName;
+		_firstName = _user.FirstName;    // load data into local inputs
 		_lastName = _user.LastName;
 		_address = _user.Address;
 		_phone = _user.Phone;

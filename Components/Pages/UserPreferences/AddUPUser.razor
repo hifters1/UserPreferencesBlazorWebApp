@@ -37,7 +37,7 @@
 </div>
 
 @code {
-	private string? _firstName;
+	private string? _firstName;     //  local variables for holding user input
 	private string? _lastName;
 	private string? _address;
 	private string? _phone;
@@ -45,25 +45,25 @@
 	
 	private bool selPrefs = false;  //used for selection list to show previously selected preferences
 
-	private User? _user;
+	private User? _user;            // user object for holding user data
 
 	private List<Preference> _prefs = new List<Preference>();    // list of all available preferences
 	private List<string> newprefs = new List<string>();          // listt of newly selected preferences
 
 	[Parameter]
-	public EventCallback<User> UPUserAdded { get; set; }
+	public EventCallback<User> UPUserAdded { get; set; }         // eventcallback for 2-way binding
 	[Parameter]
-	public bool IsOverlayVisible { get; set; }
+	public bool IsOverlayVisible { get; set; }                   // controls the overlay page
 	[Parameter]
-	public EventCallback<bool> IsOverlayVisibleChanged { get; set; }
+	public EventCallback<bool> IsOverlayVisibleChanged { get; set; }  // tracks event status
 
 	protected override async Task OnInitializedAsync()
 	{
-		var prefresult = await _appService.GetAllPreferencesAsyc();
+		var prefresult = await _appService.GetAllPreferencesAsyc();  // gets a list of preferences
 		_prefs = prefresult.ToList();
 	}
 	
-	private async Task AddUserAsync()
+	private async Task AddUserAsync()  // adds new user to user table and user preferences table
 	{
 		var newUser = new User { FirstName = _firstName!, LastName = _lastName!, Address = _address!, Phone = _phone!, Email = _email! };
 		var user = await _appService.AddNewUPUserAsync(newUser, newprefs);
@@ -71,6 +71,8 @@
 		await IsOverlayVisibleChanged.InvokeAsync(false);
 	}
 
+	// manages the changes in values of the checkboxes,
+	// creates a list of new preferences and/or old preferences to be removed
 	private void CheckboxChanged(ChangeEventArgs e, string key)
 	{
 		if ((bool)e.Value)
@@ -89,7 +91,7 @@
 		}
 	}
 
-	private async Task CloseOverlayAsync()
+	private async Task CloseOverlayAsync()    // close the overlay page
 	{
 		await IsOverlayVisibleChanged.InvokeAsync(false);
 	}

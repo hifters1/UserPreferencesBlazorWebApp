@@ -16,22 +16,29 @@
 </div>
 
 @code {
-	private string? _preferenceName;
+	private string? _preferenceName;                      // local variable to capture input
 	[Parameter]
-	public int Id { get; set; }
-	private Preference? _preference;
+	public int Id { get; set; }                           // gets Id input from the page request
+	private Preference? _preference;                      // object to hold preference data when loading the page
 
 	protected async override Task OnInitializedAsync()
 	{
-		_preference = await _appService.GetPreferenceByIdAsync(Id);
-		_preferenceName = _preference.Name;
+		_preference = await _appService.GetPreferenceByIdAsync(Id);    // get specific preference record from database
+		_preferenceName = _preference.Name;              // put preference name in input field
 	}
 
 	private async Task UpdatePreferenceAsync()
 	{
-		var newPref = new Preference { Id = Id, Name = _preferenceName! };
-		var pref = await _appService.UpdatePreferenceAsync(newPref);
-		_navigationManager.NavigateTo($"/preferences");
+		if (_preferenceName != null)
+		{
+			var newPref = new Preference { Id = Id, Name = _preferenceName! };
+			var pref = await _appService.UpdatePreferenceAsync(Id, newPref);
+			_navigationManager.NavigateTo($"/preferences");
+		}
+		else
+		{
+			_preferenceName = "* Required";       // cheesy validation - need to learn more 
+		}
 	}
 
 	private void CloseOverlayAsync()

@@ -31,31 +31,31 @@
 </div>
 
 @code {
-	private string? _firstName;
+	private string? _firstName;  // local variable tied to inputs
 	private string? _lastName;
 	private string? _address;
 	private string? _phone;
 	private string? _email;
 	[Parameter]
-	public EventCallback<User> UserAdded { get; set; }
+	public EventCallback<User> UserAdded { get; set; }   // event callback funtion
 	[Parameter]
-	public bool IsOverlayVisible { get; set; }
+	public bool IsOverlayVisible { get; set; }    // controls the overlay page
 	[Parameter]
-	public EventCallback<bool> IsOverlayVisibleChanged { get; set; }
+	public EventCallback<bool> IsOverlayVisibleChanged { get; set; }  // tracks overlay status changes
 
 	private async Task AddUserAsync()
 	{
-//		if( _firstName.Trim() == null)
-//		{
-//			//_firstName.
-//		} else
-//		{
+		if( _firstName == null)
+		{
+			_firstName = "* Required";    // cheesy validation
+		} else
+		{
 			var newUser = new User { FirstName = _firstName!, LastName = _lastName!, Address = _address!, Phone = _phone!, Email = _email! };
 			var user = await _appService.AddUserAsync(newUser);
 			await UserAdded.InvokeAsync(user);
 			await IsOverlayVisibleChanged.InvokeAsync(false);   //trigger event callback
 
-//		}
+		}
 	}
 
 	private async Task CloseOverlayAsync()
