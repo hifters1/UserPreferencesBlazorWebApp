@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UserPreferencesBlazorWebApp.Models
 {
 	public class UserPreference
 	{
+		[Key]
 		public int Id { get; set; }
 
 		public string? PreferenceName { get; set; }

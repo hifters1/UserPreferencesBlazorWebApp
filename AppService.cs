@@ -139,8 +139,7 @@ namespace UserPreferencesBlazorWebApp
 		// GetAllUserPreferencesAsyc - 
 		// AddNewUPUserAsync
 		// AddUserAsync - 
-		// DeleteUserPreferenceAsync - 
-		// DeleteNullUserPreferenceAsync - 
+		// DeleteUserPreferenceByIdAsync - 
 		// UpdateUserPreferenceAsync - 
 		//
 
@@ -216,19 +215,7 @@ namespace UserPreferencesBlazorWebApp
 				}
 				return user;
 		}
-		public async Task<UserPreference> DeleteUserPreferenceAsync(int id, List<string> pref)
-		{
-			using var context = await _dbContextFactory.CreateDbContextAsync();
-			var existingPreference = await context.UserPreferences.FirstOrDefaultAsync(p => p.UserId == id);
-
-			if (existingPreference is not null)
-			{
-				context.UserPreferences.Remove(existingPreference);
-				await context.SaveChangesAsync();
-			}
-			return null;
-		}
-		public async Task<UserPreference> DeleteNullUserPreferenceAsync(int id)
+		public async Task<UserPreference> DeleteUserPreferenceByIdAsync(int id)
 		{
 			using var context = await _dbContextFactory.CreateDbContextAsync();
 			var existingPreference = await context.UserPreferences.FirstOrDefaultAsync(p => p.UserId == id);
