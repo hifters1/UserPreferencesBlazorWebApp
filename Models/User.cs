@@ -8,7 +8,9 @@ namespace UserPreferencesBlazorWebApp.Models
 		public int Id { get; set; }
 		
 		[Required]
+		[StringLength(60, MinimumLength = 3)]
 		public string FirstName { get; set; }
+		[StringLength(60, MinimumLength = 3)]
 		public string? LastName { get; set; }
 		public string? Address { get; set; }
 		public string? Phone { get; set; }

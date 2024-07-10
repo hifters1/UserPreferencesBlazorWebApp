@@ -135,16 +135,15 @@ else
 		if (_user != null)
 		{
 			var newUserPref = new UserPreference();
-			if (_user.PreferenceList[0].PreferenceName == null)          // User was created with no preferences
+			if (_user.PreferenceList[0].PreferenceName == null)   // User was created with no preferences, null preference name exists
 			{
 				if (newprefs.Count !=0)
 				{
 					newUserPref.PreferenceName = newprefs[0].ToString();
-					newUserPref.UserId = _user.Id;
+					newUserPref.UserId = _user.PreferenceList[0].Id;      // _user.PreferenceList[0].Id since there is only one record
 					await _appService.UpdateUserPreferenceAsync(newUserPref);  // need to update null userpreference first
 					for (int i = 1; i < newprefs.Count; i++)
 					{
-						newUserPref = new UserPreference();
 						newUserPref.PreferenceName = newprefs[i].ToString();
 						newUserPref.UserId = _user.Id;
 						await _appService.AddPreferenceUserPreferences(newUserPref);
@@ -153,20 +152,27 @@ else
 			}
 			else
 			{   //preference list contains valid selections
+				bool newPrefsAdded = false;
 				if (newprefs.Count != 0 )                // add new preferences to the user
 				{
 					for (int i = 0; i < newprefs.Count; i++)
 					{
-						newUserPref = new UserPreference();
 						newUserPref.PreferenceName = newprefs[i].ToString();
 						newUserPref.UserId = _user.Id;
 						await _appService.AddPreferenceUserPreferences(newUserPref);
 					}
+					newPrefsAdded = true;
 					if (prefsToRemove.Count > 0)
 					{
 						for (int i = 0; i < prefsToRemove.Count; i++)
 						{
-							await _appService.DeleteUserPreferenceByIdAsync(_user.Id);
+							for (int plId = 0;plId < _user.PreferenceList.Count; plId++)
+							{
+								if(_user.PreferenceList[plId].PreferenceName == prefsToRemove[i].ToString())
+								{
+									await _appService.DeleteUserPreferenceByIdAsync(_user.PreferenceList[plId].Id);
+								}
+							}
 						}
 					}
 				}
@@ -174,32 +180,31 @@ else
 				{
 					for ( int i = 0; i < prefsToRemove.Count; i++)
 					{
-						newUserPref.UserId = _user.Id;
-						if ( i == _user.PreferenceList.Count - 1)      // When removing preferences, need handle last select as an update to null
+						for (int plId = 0; plId < _user.PreferenceList.Count; plId++)    // should make this a function call
 						{
-							newUserPref.PreferenceName = null;
-							await _appService.UpdateUserPreferenceAsync(newUserPref);
-						}
-						else
-						{
-							newUserPref.PreferenceName = prefsToRemove[i].ToString();
-							await _appService.DeleteUserPreferenceByIdAsync(_user.Id);
+							if (_user.PreferenceList[plId].PreferenceName == prefsToRemove[i].ToString())
+							{
+								if (i == _user.PreferenceList.Count - 1)      // When removing preferences, need handle last select as an update to null
+								{
+									if (newPrefsAdded)
+									{
+										await _appService.DeleteUserPreferenceByIdAsync(_user.PreferenceList[plId].Id);
+									}
+									else
+									{
+										newUserPref.PreferenceName = null;
+										newUserPref.UserId = _user.PreferenceList[plId].Id;
+										await _appService.UpdateUserPreferenceAsync(newUserPref);
+									}
+								}
+								else
+								{
+									await _appService.DeleteUserPreferenceByIdAsync(_user.PreferenceList[plId].Id);
+								}
+							}
 						}
 					}
 				}
-			}
-		}
-		else
-		{
-			//add a new user?? we should not be hitting this
-			var newUser = new User { FirstName = _firstName!, LastName = _lastName!, Address = _address!, Phone = _phone!, Email = _email! };
-			if (newprefs.Count == 0)
-			{
-				var user = await _appService.AddUPUserAsync(newUser, null);
-			}
-			else
-			{
-				var user = await _appService.AddUPUserAsync(newUser, newprefs);
 			}
 		}
 		newprefs = null;
@@ -220,7 +225,6 @@ else
 			i.Selected = (bool)e.Value;
 			if (i.Selected)
 			{
-				// Need logic to put an original preference back
 				if (!oldprefs.Contains(key))
 				{
 					oldprefs.Add(key);   // put the key back

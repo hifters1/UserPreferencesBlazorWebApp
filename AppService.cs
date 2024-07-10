@@ -185,7 +185,7 @@ namespace UserPreferencesBlazorWebApp
 				{
 					var newUserPref = new UserPreference();
 					newUserPref.PreferenceName = prefs[0].ToString();
-					newUserPref.UserId = user.Id;
+					newUserPref.UserId = user.PreferenceList[0].Id;
 					UpdateUserPreferenceAsync(newUserPref);
 					await context.SaveChangesAsync();
 					prefs.Remove(prefs[0]);
@@ -218,7 +218,7 @@ namespace UserPreferencesBlazorWebApp
 		public async Task<UserPreference> DeleteUserPreferenceByIdAsync(int id)
 		{
 			using var context = await _dbContextFactory.CreateDbContextAsync();
-			var existingPreference = await context.UserPreferences.FirstOrDefaultAsync(p => p.UserId == id);
+			var existingPreference = await context.UserPreferences.FirstOrDefaultAsync(p => p.Id == id);
 
 			if (existingPreference is not null)
 			{
@@ -230,12 +230,12 @@ namespace UserPreferencesBlazorWebApp
 		public async Task<UserPreference?> UpdateUserPreferenceAsync(UserPreference updatedUserPref)
 		{
 			using var context = await _dbContextFactory.CreateDbContextAsync();
-			var existingUser = await context.UserPreferences.FirstOrDefaultAsync(p => p.UserId == updatedUserPref.UserId);
+			var existingUser = await context.UserPreferences.FirstOrDefaultAsync(p => p.Id == updatedUserPref.UserId);
 
 			if (existingUser is not null)
 			{
 				existingUser.PreferenceName = updatedUserPref.PreferenceName;
-				existingUser.UserId = updatedUserPref.UserId;
+				existingUser.Id = updatedUserPref.UserId;
 
 				await context.SaveChangesAsync();
 				return existingUser;
@@ -248,8 +248,7 @@ namespace UserPreferencesBlazorWebApp
 			using var context = await _dbContextFactory.CreateDbContextAsync();
 			context.UserPreferences.Add(newPref);
 			await context.SaveChangesAsync();
-			return newPref;
+			return null;
 		}
-
 	}
 }
