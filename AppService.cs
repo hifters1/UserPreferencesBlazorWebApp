@@ -181,43 +181,35 @@ namespace UserPreferencesBlazorWebApp
 		{
 			using var context = await _dbContextFactory.CreateDbContextAsync();
 
-				var newuser = new User();
+				//var newuser = new User();
 				if (user.PreferenceList == null && prefs.Count >0)
 				{
-					//UpdateUserPreferenceAsync(user);
-					//DeleteNullUserPreferenceAsync(user.Id); 
 					var newUserPref = new UserPreference();
 					newUserPref.PreferenceName = prefs[0].ToString();
 					newUserPref.UserId = user.Id;
 					UpdateUserPreferenceAsync(newUserPref);
-					//context.UserPreferences.Add(newUserPref);
 					await context.SaveChangesAsync();
 					prefs.Remove(prefs[0]);
-					//user = UpdateUserPreferenceAsync(user);
-					//return user;
 					for (int i = 0; i < prefs.Count; i++)
 					{
 						newUserPref = new UserPreference();
 						newUserPref.PreferenceName = prefs[i].ToString();
-						newUserPref.UserId = newuser.Id;
-						context.UserPreferences.Add(newUserPref);
-						await context.SaveChangesAsync();
+						newUserPref.UserId = user.Id;
+						AddPreferenceUserPreferences(newUserPref);
 					}
 					return user;
-
 				}
 				else
 				{
-
 					if (prefs != null)
 					{
 						for (int i = 0; i < prefs.Count; i++)
 						{
 							var newUserPref = new UserPreference();
 							newUserPref.PreferenceName = prefs[i].ToString();
-							newUserPref.UserId = newuser.Id;
-							context.UserPreferences.Add(newUserPref);
-							await context.SaveChangesAsync();
+							newUserPref.UserId = user.Id;
+							AddPreferenceUserPreferences(newUserPref);
+							
 						}
 						return user;
 					}
@@ -264,7 +256,7 @@ namespace UserPreferencesBlazorWebApp
 			return null;
 		}
 
-		public async Task<UserPreference> AddPreferenceUserPrefernces(UserPreference newPref)
+		public async Task<UserPreference> AddPreferenceUserPreferences(UserPreference newPref)
 		{
 			using var context = await _dbContextFactory.CreateDbContextAsync();
 			context.UserPreferences.Add(newPref);
