@@ -15,11 +15,11 @@ namespace UserPreferencesBlazorWebApp
 		}
 
 		//Preference methods
-		// GetAllPreferencesAsync - 
-		// GetPreferenceByIdAs - 
-		// UpdatePreferenceAsync - 
-		// DeletePreferenceA - 
-		// AddPreferenceAsyns - 
+		// GetAllPreferencesAsync - get all available preferences
+		// GetPreferenceByIdAsync - get a specific preference by their id 
+		// UpdatePreferenceAsync - update preference name
+		// DeletePreferenceAsync - delete a preference 
+		// AddPreferenceAsync - add a new preference 
 		//
 
 		public async Task<IEnumerable<Preference>> GetAllPreferencesAsyc()
@@ -74,7 +74,7 @@ namespace UserPreferencesBlazorWebApp
 		// GetUserByIdAsync - get a specific user by their id
 		// UpdateUserAsync - update a users data from overlay
 		// DeleteUserAsync - remove the user from the db
-		// AddUserAsync - 
+		// AddUserAsync - add a new user with null preferencelist
 
 		public async Task<IEnumerable<User>> GetAllUsersAsyc()
 		{
@@ -136,12 +136,11 @@ namespace UserPreferencesBlazorWebApp
 		}
 
 		//UserPreference methods
-		// GetAllUserPreferencesAsyc - 
-		// AddNewUPUserAsync
-		// AddUserAsync - 
-		// DeleteUserPreferenceByIdAsync - 
-		// UpdateUserPreferenceAsync - 
-		//
+		// GetAllUserPreferencesAsyc - get all one to many records from user preferences
+		// AddNewUPUserAsync - add a new user from the user preference page
+		// DeleteUserPreferenceByIdAsync - delete a specific preference from a user
+		// UpdateUserPreferenceAsync - update a preference name for a spcific user preference id
+		// AddPreferenceUserPreferences - add a preference to user in user preferences
 
 		public async Task<ICollection<User>> GetAllUserPreferencesAsyc()
 		{
@@ -175,45 +174,6 @@ namespace UserPreferencesBlazorWebApp
 				}
 				return user;
 			}
-		}
-		public async Task<User> AddUPUserAsync(User user, List<string> prefs)
-		{
-			using var context = await _dbContextFactory.CreateDbContextAsync();
-
-				//var newuser = new User();
-				if (user.PreferenceList == null && prefs.Count >0)
-				{
-					var newUserPref = new UserPreference();
-					newUserPref.PreferenceName = prefs[0].ToString();
-					newUserPref.UserId = user.PreferenceList[0].Id;
-					UpdateUserPreferenceAsync(newUserPref);
-					await context.SaveChangesAsync();
-					prefs.Remove(prefs[0]);
-					for (int i = 0; i < prefs.Count; i++)
-					{
-						newUserPref = new UserPreference();
-						newUserPref.PreferenceName = prefs[i].ToString();
-						newUserPref.UserId = user.Id;
-						AddPreferenceUserPreferences(newUserPref);
-					}
-					return user;
-				}
-				else
-				{
-					if (prefs != null)
-					{
-						for (int i = 0; i < prefs.Count; i++)
-						{
-							var newUserPref = new UserPreference();
-							newUserPref.PreferenceName = prefs[i].ToString();
-							newUserPref.UserId = user.Id;
-							AddPreferenceUserPreferences(newUserPref);
-							
-						}
-						return user;
-					}
-				}
-				return user;
 		}
 		public async Task<UserPreference> DeleteUserPreferenceByIdAsync(int id)
 		{
